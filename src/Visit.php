@@ -2,7 +2,6 @@
 
 namespace Kyranb\Footprints;
 
-use Cookie;
 use Illuminate\Database\Eloquent\Model;
 
 class Visit extends Model
@@ -68,8 +67,8 @@ class Visit extends Model
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopePreviousVisits($query)
+    public function scopePreviousVisits($query, $cookie)
     {
-        return $query->where('cookie_token', Cookie::get(config('footprints.cookie_name')));
+        return $query->where('cookie_token', $cookie);
     }
 }
