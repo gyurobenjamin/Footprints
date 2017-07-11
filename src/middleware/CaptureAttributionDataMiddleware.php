@@ -253,14 +253,37 @@ class CaptureAttributionDataMiddleware
      */
     protected function findOrCreateTrackingCookieToken()
     {
-        $cookieToken = str_random(40);
+        $length = 40;
+        $secure = config('footprints.encrypt_cookie');
+        $cookieName = config('footprints.cookie_name');
 
-        if ($this->request->hasCookie(config('footprints.cookie_name'))) {
-            $cookieToken = $this->request->cookie(config('footprints.cookie_name'));
+        $cookieToken = $this->request->cookie($cookieName) ? $this->request->cookie($cookieName) : @$_COOKIE[$cookieName];
+        $cookieToken = strlen($cookieToken) == $length ? $cookieToken : null; // fake token
+        $cookieToken = $cookieToken ?: str_random($length);
+
+        $cookie = cookie(
+            $cookieName,
+            $cookieToken,
+            config('footprints.attribution_duration'),
+            null,
+            config('footprints.cookie_domain')
+        );
+
+        if ($secure && method_exists($this->response, "withCookie")) {
+            $this->response->withCookie($cookie);
         }
 
-        if (method_exists($this->response, "withCookie")) {
-            $this->response->withCookie(cookie(config('footprints.cookie_name'), $cookieToken, config('footprints.attribution_duration'), null, config('footprints.cookie_domain')));
+
+        if (!$secure) {
+            setcookie(
+                $cookie->getName(),
+                $cookie->getValue(),
+                $cookie->getExpiresTime(),
+                $cookie->getPath(),
+                $cookie->getDomain(),
+                $cookie->isSecure(),
+                $cookie->isHttpOnly()
+            );
         }
 
         return $cookieToken;
