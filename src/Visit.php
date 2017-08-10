@@ -50,7 +50,33 @@ class Visit extends Model
         }
     }
 
+    /**
+     * @param array $attributes
+     */
+    public static function create(array $attributes = [])
+    {
+        $customQuery = config('footprints.custom_insert.query');
+        $customParams = config('footprints.custom_insert.params');
+        $connection = config('footprints.connection_name') ?: 'default';
 
+        if ($customQuery && $customParams) {
+            
+            $filteredAttributes = array_filter(
+                $attributes,
+                function($key) use ($customParams) {
+                    return in_array($key, $customParams);
+                },
+                ARRAY_FILTER_USE_KEY
+            );
+
+            \DB::connection($connection)
+                ->statement($customQuery, $filteredAttributes);
+        } else {
+            Visit::insert($attributes);
+        }
+
+        return Visit::where('cookie_token', $attributes['cookie_token'])->orderBy('id', 'DESC')->first();
+    }
 
     /**
      * Get the account that owns the visit.

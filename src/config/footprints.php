@@ -125,4 +125,17 @@ return [
     |
     */
     'async' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom insenr SQL query
+    |--------------------------------------------------------------------------
+    |
+    | If you need to change the way how to store the data
+    |
+    */
+    'custom_insert' => [
+        'query' => false,
+        'params' => false,
+    ],
 ];
