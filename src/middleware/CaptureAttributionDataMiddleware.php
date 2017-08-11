@@ -299,10 +299,12 @@ class CaptureAttributionDataMiddleware
         $blacklist = (array)config('footprints.landing_page_blacklist');
 
         if ($landing_page) {
-            
-            $k = array_search($landing_page, $blacklist);
-
-            return $k === false ? false : true;
+            foreach ($blacklist as $key => $value) {
+                if (fnmatch($value, $landing_page)) {
+                    return true;
+                }
+            }
+            return false;
         }
         else {
 
